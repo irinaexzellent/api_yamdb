@@ -12,7 +12,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         'Genre',
-        through='Genre_title',
+        through='GenreTitle',
     )
 
 
