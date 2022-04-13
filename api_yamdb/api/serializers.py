@@ -10,6 +10,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date', 'score')
         model = Review
+        read_only_fields = ['author']
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -18,3 +19,4 @@ class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Comments
+        read_only_fields = ['author']
