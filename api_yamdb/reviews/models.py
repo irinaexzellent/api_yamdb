@@ -1,5 +1,8 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
+
+User = get_user_model
 
 class Title(models.Model):
     name = models.CharField(max_length=250)
@@ -17,7 +20,7 @@ class Title(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(unique=True)
 
 
