@@ -68,6 +68,7 @@ class Comments(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
+
 class Category(models.Model):
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
@@ -97,6 +98,7 @@ class GenreTitle(models.Model):
                 name='unique_GenreTitle'
             )
         ]
+
 
 class User(AbstractUser):
     USER = "user"
@@ -140,5 +142,5 @@ def create_profile(sender, instance, created, **kwargs):
     if created:
         instance.confirmation_code = default_token_generator.make_token(
             user=instance
-            )
+        )
         instance.save()

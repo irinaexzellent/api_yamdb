@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, viewsets,status,permissions
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework import filters, generics, viewsets, status, permissions
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.response import Response
 from reviews.models import Category, Comments, Genre, Review, Title, User
 from .pagination import CategoryGenrePagination
@@ -11,6 +12,7 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           AuthSerializer, RoleforReadSerializer,
                           ObtainTokenSerializer, UserSerializer)
 from django.conf import settings
+from django.db.models import Avg
 from django.core.mail import send_mail
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -25,13 +27,13 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs.get("title_id")
-        get_object_or_404(Titles, id=title_id)
+        get_object_or_404(Title, id=title_id)
         new_queryset = Review.objects.filter(title_id=title_id)
         return new_queryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
-        get_object_or_404(Titles, id=title_id)    
+        get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user,
                         title_id=title_id)
 
@@ -42,13 +44,13 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_id")
-        get_object_or_404(Review, id=review_id)   
+        get_object_or_404(Review, id=review_id)
         new_queryset = Comments.objects.filter(review_id=review_id)
         return new_queryset
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get("review_id")
-        get_object_or_404(Review, id=review_id)    
+        get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user,
                         title_id=review_id)
 
@@ -70,7 +72,7 @@ class CategoryDelete(generics.DestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
-    #permission_classes = (AdminOnly,)
+    # permission_classes = (AdminOnly,)
 
 
 class GenreListCreate(generics.ListCreateAPIView):
@@ -90,7 +92,7 @@ class GenreDelete(generics.DestroyAPIView):
     queryset = Genre.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
-    #permission_classes = (AdminOnly,)
+    # permission_classes = (AdminOnly,)
 
 
 class TitleFilter(django_filters.FilterSet):
@@ -195,8 +197,8 @@ class APIToken(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if (
-          serializer.validated_data['confirmation_code']
-          == user.confirmation_code
+            serializer.validated_data['confirmation_code']
+            == user.confirmation_code
         ):
             token = RefreshToken.for_user(request.user).access_token
             return Response(
