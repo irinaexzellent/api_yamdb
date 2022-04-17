@@ -4,10 +4,11 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model
 
+
 class Title(models.Model):
     name = models.CharField(max_length=250)
     year = models.SmallIntegerField()
-    desription = models.TextField()
+    description = models.TextField(null=True, blank=True)
     category = models.ForeignKey(
         'Category',
         on_delete=models.DO_NOTHING,
@@ -20,12 +21,12 @@ class Title(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
 
 
@@ -40,3 +41,11 @@ class GenreTitle(models.Model):
         on_delete=models.CASCADE,
         related_name='genre_title',
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title_id', 'genre_id'],
+                name='unique_GenreTitle'
+            )
+        ]

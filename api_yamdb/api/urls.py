@@ -1,13 +1,21 @@
-from django.urls import include, path
-from rest_framework.routers import SimpleRouter
-
-from .views import CategoryViewSet
+from django.urls import path
 
 
-router_v1 = SimpleRouter()
-router_v1.register('categories', CategoryViewSet)
+from .views import (
+    CategoryListCreate,
+    CategoryDelete,
+    GenreListCreate,
+    GenreDelete,
+    TitleViewSet,
+    TitleList,
+)
 
 
 urlpatterns = [
-    path('v1/', include(router_v1.urls)),
+    path('v1/categories/', CategoryListCreate.as_view()),
+    path('v1/categories/<slug>/', CategoryDelete.as_view()),
+    path('v1/genres/', GenreListCreate.as_view()),
+    path('v1/genres/<slug>/', GenreDelete.as_view()),
+    path('v1/titles/', TitleList.as_view()),
+    path('v1/titles/<pk>/', TitleViewSet.as_view()),
 ]
