@@ -42,6 +42,14 @@ class User(AbstractUser):
         verbose_name='confirmation_code'
     )
 
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        instance.confirmation_code = default_token_generator.make_token(
+            user=instance
+        )
+        instance.save()
+
 
 class Title(models.Model):
     name = models.CharField(max_length=250)
