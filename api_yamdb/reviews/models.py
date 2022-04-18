@@ -7,7 +7,41 @@ from django.db.models.signals import post_save
 from django.contrib.auth.tokens import default_token_generator
 
 
-User = get_user_model
+class User(AbstractUser):
+    USER = "user"
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+
+    ROLE = [
+        (ADMIN, 'admin'),
+        (MODERATOR, 'moderator'),
+        (USER, 'user')]
+
+    role = models.CharField(
+        max_length=5,
+        choices=ROLE,
+        default=USER,
+    )
+
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+
+    username = models.CharField(
+        max_length=150, unique=True, blank=False, null=False
+    )
+    email = models.EmailField(
+        max_length=254, unique=True, blank=False, null=False
+    )
+
+    confirmation_code = models.CharField(
+        max_length=70,
+        unique=True,
+        blank=True,
+        null=True,
+        verbose_name='confirmation_code'
+    )
 
 
 class Title(models.Model):
@@ -58,7 +92,7 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     title = models.ForeignKey(
-        'Titles',
+        Title,
         related_name='Titles_review',
         on_delete=models.SET_NULL,
         blank=True,
@@ -84,14 +118,14 @@ class Review(models.Model):
 
 class Comments(models.Model):
     review = models.ForeignKey(
-        'Review',
+        Review,
         related_name='review_comments',
         on_delete=models.SET_NULL,
         blank=True,
         null=True
     )
     author = models.ForeignKey(
-        User,
+        'User',
         related_name='comment',
         on_delete=models.CASCADE,
         blank=True,
@@ -99,43 +133,6 @@ class Comments(models.Model):
     )
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
-
-
-class User(AbstractUser):
-    USER = "user"
-    ADMIN = "admin"
-    MODERATOR = "moderator"
-
-    ROLE = [
-        (ADMIN, 'admin'),
-        (MODERATOR, 'moderator'),
-        (USER, 'user')]
-
-    role = models.CharField(
-        max_length=5,
-        choices=ROLE,
-        default=USER,
-    )
-
-    bio = models.TextField(
-        'Биография',
-        blank=True,
-    )
-
-    username = models.CharField(
-        max_length=150, unique=True, blank=False, null=False
-    )
-    email = models.EmailField(
-        max_length=254, unique=True, blank=False, null=False
-    )
-
-    confirmation_code = models.CharField(
-        max_length=70,
-        unique=True,
-        blank=True,
-        null=True,
-        verbose_name='confirmation_code'
-    )
 
 
 @receiver(post_save, sender=User)

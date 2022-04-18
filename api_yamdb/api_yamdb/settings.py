@@ -11,8 +11,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'api.apps.ApiConfig',
-    'reviews.apps.ReviewsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,6 +22,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
 ]
+
+AUTH_USER_MODEL = "reviews.User"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
