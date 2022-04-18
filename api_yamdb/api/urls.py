@@ -1,11 +1,14 @@
-from django.urls import include, path
-from rest_framework.routers import SimpleRouter
-
 from .views import (
     CategoryViewSet,
     GenreViewSet,
     TitleViewSet,
+    CommentsViewSet,
+    ReviewsViewSet
 )
+from django.urls import include, path
+from rest_framework.routers import SimpleRouter
+
+app_name = 'api'
 
 router_v1 = SimpleRouter()
 router_v1.register(
@@ -19,6 +22,14 @@ router_v1.register(
 router_v1.register(
     'titles',
     TitleViewSet, basename='titles'
+)
+router_v1.register(
+    r'titles/(?P<title_id>\w+)/review',
+    ReviewsViewSet, basename='review'
+)
+router_v1.register(
+    r'titles/(?P<title_id>\w+)/review/(?P<review_id>\w+)/comments',
+    CommentsViewSet, basename='comment'
 )
 
 urlpatterns = [
