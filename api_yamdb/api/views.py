@@ -96,7 +96,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
-        return Title.objects.all().annotate(rating=Avg('reviews__score'),)
+        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
