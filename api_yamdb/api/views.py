@@ -74,9 +74,6 @@ class TitleFilter(django_filters.FilterSet):
         model = Title
         fields = ['name', 'category', 'genre', 'year']
 
-    def get_queryset(self):
-        return Title.objects.all().annotate(rating=Avg('reviews__score'),)
-
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
