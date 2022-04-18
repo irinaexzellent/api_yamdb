@@ -1,52 +1,44 @@
-from rest_framework import generics, filters, viewsets
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
 import django_filters
-
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
+from rest_framework import filters, viewsets
 
 from reviews.models import Category, Genre, Title
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleSerializer,
+    PostTitleSerializer,
+)
 from .pagination import CategoryGenrePagination
 
 
-class CategoryListCreate(generics.ListCreateAPIView):
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
     def get_permissions(self):
-        # if self.action == 'create':
-        # return (AdminostratorOnly(),)
+        # if self.action in ['create', 'destroy']:
+        # return (IsAdminOnly(),)
         return super().get_permissions()
 
 
-class CategoryDelete(generics.DestroyAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    lookup_field = 'slug'
-    #permission_classes = (AdminOnly,)
-
-
-class GenreListCreate(generics.ListCreateAPIView):
+class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
     def get_permissions(self):
-        # if self.action == 'create':
-        # return (AdminostratorOnly(),)
+        # if self.action in ['create', 'destroy']:
+        # return (IsAdminOnly(),)
         return super().get_permissions()
-
-
-class GenreDelete(generics.DestroyAPIView):
-    queryset = Genre.objects.all()
-    serializer_class = CategorySerializer
-    lookup_field = 'slug'
-    #permission_classes = (AdminOnly,)
 
 
 class TitleFilter(django_filters.FilterSet):
@@ -63,17 +55,22 @@ class TitleFilter(django_filters.FilterSet):
         return Title.objects.all().annotate(rating=Avg('reviews__score'),)
 
 
-class TitleList(generics.ListCreateAPIView):
+class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleSerializer
+        return PostTitleSerializer
 
-class TitleViewSet(generics.RetrieveDestroyAPIView):
-    serializer_class = TitleSerializer
+    def get_permissions(self):
+        # if self.action in ['create', 'destroy', 'partial_update']:
+        # return (IsAdminOnly(),)
+        return super().get_permissions()
 
-    def get_queryset(self):
-        title_id = self.kwargs.get('pk')
-        return Title.objects.filter(pk=title_id)
+    # def get_queryset(self):
+        # return Title.objects.all().annotate(rating=Avg('reviews__score'),)

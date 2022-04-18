@@ -1,21 +1,26 @@
-from django.urls import path
-
+from django.urls import include, path
+from rest_framework.routers import SimpleRouter
 
 from .views import (
-    CategoryListCreate,
-    CategoryDelete,
-    GenreListCreate,
-    GenreDelete,
+    CategoryViewSet,
+    GenreViewSet,
     TitleViewSet,
-    TitleList,
 )
 
+router_v1 = SimpleRouter()
+router_v1.register(
+    'genres',
+    GenreViewSet, basename='genres'
+)
+router_v1.register(
+    'categories',
+    CategoryViewSet, basename='categores'
+)
+router_v1.register(
+    'titles',
+    TitleViewSet, basename='titles'
+)
 
 urlpatterns = [
-    path('v1/categories/', CategoryListCreate.as_view()),
-    path('v1/categories/<slug>/', CategoryDelete.as_view()),
-    path('v1/genres/', GenreListCreate.as_view()),
-    path('v1/genres/<slug>/', GenreDelete.as_view()),
-    path('v1/titles/', TitleList.as_view()),
-    path('v1/titles/<pk>/', TitleViewSet.as_view()),
+    path('v1/', include(router_v1.urls)),
 ]

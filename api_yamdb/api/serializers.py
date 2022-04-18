@@ -1,7 +1,8 @@
 import datetime
+
 from rest_framework import serializers
 
-from reviews.models import Category, Genre, Title, GenreTitle
+from reviews.models import Category, Genre, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -39,17 +40,32 @@ class TitleSerializer(serializers.ModelSerializer):
             'category',
         )
 
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(**genre)
-            GenreTitle.objects.create(
-                genre_id=current_genre, title_id=title)
-        return Title
-
     def validate(self, data):
         if data['year'] > datetime.datetime.now().year:
             raise serializers.ValidationError(
-                'Добавить произведение, которое еще не вышло.')
+                'Нельзя добавить произведение, которое еще не вышло.')
         return data
+
+
+class PostTitleSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all(),
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=False,
+        queryset=Category.objects.all(),
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category',
+        )
