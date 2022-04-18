@@ -1,26 +1,133 @@
-from django.conf import settings
-from django.core.mail import send_mail
-
-from rest_framework import filters
-from rest_framework import status
-from rest_framework import permissions
-from rest_framework import viewsets
-
-from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
+import django_filters
+from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
-
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.views import APIView
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
+from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
+from django.core.mail import send_mail
+from django.conf import settings
 
-
-from .serializers import AuthSerializer, RoleforReadSerializer
-from .serializers import ObtainTokenSerializer, UserSerializer
 from .permissions import IsAdminOnly
+from .pagination import CategoryGenrePagination
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleSerializer,
+    PostTitleSerializer,
+    CommentsSerializer,
+    ReviewSerializer,
+    AuthSerializer,
+    RoleforReadSerializer,
+    ObtainTokenSerializer,
+    UserSerializer
+)
+from reviews.models import (
+    Category,
+    Genre,
+    Title,
+    Comments,
+    Review,
+    User,
+)
 
 
-from reviews.models import User
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = CategoryGenrePagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy']:
+            return (IsAdminOnly(),)
+        return super().get_permissions()
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    pagination_class = CategoryGenrePagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy']:
+            return (IsAdminOnly(),)
+        return super().get_permissions()
+
+
+class TitleFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(field_name='name')
+    category = django_filters.CharFilter(field_name='category__slug')
+    genre = django_filters.CharFilter(field_name='genre__slug')
+    year = django_filters.NumberFilter(field_name='year')
+
+    class Meta:
+        model = Title
+        fields = ['name', 'category', 'genre', 'year']
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    pagination_class = CategoryGenrePagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleSerializer
+        return PostTitleSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy', 'partial_update']:
+            return (IsAdminOnly(),)
+        return super().get_permissions()
+
+    def get_queryset(self):
+        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
+
+
+class ReviewsViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        title_id = self.kwargs.get("title_id")
+        get_object_or_404(Title, id=title_id)
+        new_queryset = Review.objects.filter(title_id=title_id)
+        return new_queryset
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get("title_id")
+        get_object_or_404(Title, id=title_id)
+        serializer.save(author=self.request.user,
+                        title_id=title_id)
+
+
+class CommentsViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentsSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        review_id = self.kwargs.get("review_id")
+        get_object_or_404(Review, id=review_id)
+        new_queryset = Comments.objects.filter(review_id=review_id)
+        return new_queryset
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get("review_id")
+        get_object_or_404(Review, id=title_id)
+        serializer.save(author=self.request.user,
+                        title_id=title_id)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -95,8 +202,8 @@ class APIToken(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if (
-          serializer.validated_data['confirmation_code']
-          == user.confirmation_code
+            serializer.validated_data['confirmation_code']
+            == user.confirmation_code
         ):
             token = RefreshToken.for_user(request.user).access_token
             return Response(

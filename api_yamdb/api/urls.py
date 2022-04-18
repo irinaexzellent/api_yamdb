@@ -1,15 +1,48 @@
+from rest_framework.routers import SimpleRouter
 from django.urls import include, path
 
-from rest_framework.routers import DefaultRouter
+from .views import (
+    CategoryViewSet,
+    GenreViewSet,
+    TitleViewSet,
+    CommentsViewSet,
+    ReviewsViewSet,
+    APISignUp,
+    APIToken,
+    UsersViewSet,
+)
 
-from api.views import APISignUp, APIToken, UsersViewSet
+app_name = 'api'
 
-
-router = DefaultRouter()
-router.register('users', UsersViewSet, basename='users')
+router_v1 = SimpleRouter()
+router_v1.register(
+    'genres',
+    GenreViewSet, basename='genres'
+)
+router_v1.register(
+    'categories',
+    CategoryViewSet, basename='categores'
+)
+router_v1.register(
+    'titles',
+    TitleViewSet, basename='titles'
+)
+router_v1.register(
+    r'titles/(?P<title_id>\w+)/review',
+    ReviewsViewSet, basename='review'
+)
+router_v1.register(
+    r'titles/(?P<title_id>\w+)/review/(?P<review_id>\w+)/comments',
+    CommentsViewSet, basename='comment'
+)
+router_v1.register(
+    'users',
+    UsersViewSet,
+    basename='users'
+)
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
+    path('v1/', include(router_v1.urls)),
     path('v1/auth/token/', APIToken.as_view(),
          name='token_obtain_pair'),
     path('v1/auth/signup/', APISignUp.as_view()),
