@@ -10,6 +10,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_FROM = 'apiyamdb@example.ru.'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,8 +25,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
-    'rest_framework_simplejwt',
-    'django_filters',
 ]
 
 AUTH_USER_MODEL = "reviews.User"
