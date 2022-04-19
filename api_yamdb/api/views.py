@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .permissions import IsAdminOnly, AdminOrReadOnly
+from .permissions import IsAdminOnly, AdminOrReadOnly,  WriteOnlyAuthorOr
 from .pagination import CategoryGenrePagination
 from .serializers import (
     CategorySerializer,
@@ -102,6 +102,9 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewsViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = [
+        WriteOnlyAuthorOr,
+    ]
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -119,6 +122,9 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = [
+        WriteOnlyAuthorOr,
+    ]
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
@@ -127,10 +133,10 @@ class CommentsViewSet(viewsets.ModelViewSet):
         return new_queryset
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('review_id')
-        get_object_or_404(Review, id=title_id)
+        review_id = self.kwargs.get('review_id')
+        get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user,
-                        title_id=title_id)
+                        review_id=review_id)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
