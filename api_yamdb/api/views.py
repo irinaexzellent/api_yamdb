@@ -119,9 +119,6 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = [
-       AdminOrReadOnly,
-    ]
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
