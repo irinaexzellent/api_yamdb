@@ -114,7 +114,7 @@ class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
     score = models.IntegerField(
-        default=10,
+        default=0,
         validators=[
             MaxValueValidator(10),
             MinValueValidator(1)

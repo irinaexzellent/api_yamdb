@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .permissions import IsAdminOnly, AdminOrReadOnly,  WriteOnlyAuthorOr
+from .permissions import IsAdminOnly, AdminOrReadOnly, WriteOnlyAuthorOr
 from .pagination import CategoryGenrePagination
 from .serializers import (
     CategorySerializer,
@@ -70,7 +70,8 @@ class GenreViewSet(ListPatchDestroyViewSet):
 
 
 class TitleFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains')
     category = django_filters.CharFilter(field_name='category__slug')
     genre = django_filters.CharFilter(field_name='genre__slug')
     year = django_filters.NumberFilter(field_name='year')
@@ -94,9 +95,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitleSerializer
         return PostTitleSerializer
-
-#    def get_queryset(self):
-#        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
