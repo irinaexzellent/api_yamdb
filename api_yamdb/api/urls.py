@@ -28,11 +28,11 @@ router_v1.register(
     TitleViewSet, basename='titles'
 )
 router_v1.register(
-    r'titles/(?P<title_id>\w+)/review',
+    r'titles/(?P<title_id>\w+)/reviews',
     ReviewsViewSet, basename='review'
 )
 router_v1.register(
-    r'titles/(?P<title_id>\w+)/review/(?P<review_id>\w+)/comments',
+    r'titles/(?P<title_id>\w+)/reviews/(?P<review_id>\w+)/comments',
     CommentsViewSet, basename='comment'
 )
 router_v1.register(

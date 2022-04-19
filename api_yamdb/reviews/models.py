@@ -1,15 +1,15 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
 class User(AbstractUser):
-    USER = "user"
-    ADMIN = "admin"
-    MODERATOR = "moderator"
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
 
     ROLE = [
         (ADMIN, 'admin'),
@@ -114,7 +114,7 @@ class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
     score = models.IntegerField(
-        default=10,
+        default=0,
         validators=[
             MaxValueValidator(10),
             MinValueValidator(1)

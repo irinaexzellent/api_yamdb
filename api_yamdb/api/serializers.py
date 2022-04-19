@@ -1,6 +1,7 @@
 import datetime
 
 from django.core.exceptions import ValidationError
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -8,6 +9,8 @@ from reviews.models import Category, Genre, Title, Comments, Review, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор категорий, модели Category."""
+
     class Meta:
         model = Category
         fields = (
@@ -17,6 +20,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор жанров, модели Genre."""
+
     class Meta:
         model = Genre
         fields = (
@@ -26,9 +31,12 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор произведений, модели Title."""
+
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
     description = required = False
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -36,19 +44,22 @@ class TitleSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'year',
+            'rating',
             'description',
             'genre',
             'category',
         )
 
-    def validate(self, data):
-        if data['year'] > datetime.datetime.now().year:
-            raise serializers.ValidationError(
-                'Нельзя добавить произведение, которое еще не вышло.')
-        return data
+    def get_rating(self, obj):
+        """Расчет среднего показателя рейтинга из всех оценок."""
+
+        rating = obj.Titles_review.aggregate(Avg('score')).get('score__avg')
+        return rating
 
 
 class PostTitleSerializer(serializers.ModelSerializer):
+    """Сериализатор метода POST, модели Title. """
+
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         many=True,
@@ -71,6 +82,14 @@ class PostTitleSerializer(serializers.ModelSerializer):
             'category',
         )
 
+#    def validate(self, data):
+#        """Валидатор проверяет год произведения."""
+
+#        if data.get('year') > datetime.datetime.now().year:
+#            raise ValidationError(
+#                'Нельзя добавить произведение, которое еще не вышло.')
+#        return data
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
@@ -82,6 +101,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
+    """Сериализатор комментариев, модели Comment. """
+
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
@@ -108,7 +129,7 @@ class AuthSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "username")
+        fields = ('email', 'username')
 
     def validate_username(self, data):
 
