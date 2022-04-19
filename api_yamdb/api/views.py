@@ -1,7 +1,7 @@
 import django_filters
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.views import APIView
@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .permissions import IsAdminOnly
+from .permissions import IsAdminOnly, AdminOrReadOnly
 from .pagination import CategoryGenrePagination
 from .serializers import (
     CategorySerializer,
@@ -43,11 +43,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def get_permissions(self):
-        if self.action in ['create', 'destroy']:
-            return (IsAdminOnly(),)
-        return super().get_permissions()
+    permission_classes = [
+        AdminOrReadOnly,
+    ]
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -57,11 +55,9 @@ class GenreViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def get_permissions(self):
-        if self.action in ['create', 'destroy']:
-            return (IsAdminOnly(),)
-        return super().get_permissions()
+    permission_classes = [
+        AdminOrReadOnly,
+    ]
 
 
 class TitleFilter(django_filters.FilterSet):
@@ -81,19 +77,17 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    permission_classes = [
+        AdminOrReadOnly,
+    ]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleSerializer
         return PostTitleSerializer
 
-    def get_permissions(self):
-        if self.action in ['create', 'destroy', 'partial_update']:
-            return (IsAdminOnly(),)
-        return super().get_permissions()
-
-    def get_queryset(self):
-        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
+#    def get_queryset(self):
+#        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
@@ -116,15 +110,18 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = [
+       AdminOrReadOnly,
+    ]
 
     def get_queryset(self):
-        review_id = self.kwargs.get("review_id")
+        review_id = self.kwargs.get('review_id')
         get_object_or_404(Review, id=review_id)
         new_queryset = Comments.objects.filter(review_id=review_id)
         return new_queryset
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get("review_id")
+        title_id = self.kwargs.get('review_id')
         get_object_or_404(Review, id=title_id)
         serializer.save(author=self.request.user,
                         title_id=title_id)
@@ -205,7 +202,7 @@ class APIToken(APIView):
             serializer.validated_data['confirmation_code']
             == user.confirmation_code
         ):
-            token = RefreshToken.for_user(request.user).access_token
+            token = AccessToken.for_user(user)
             return Response(
                 {'token': str(token)},
                 status=status.HTTP_201_CREATED,

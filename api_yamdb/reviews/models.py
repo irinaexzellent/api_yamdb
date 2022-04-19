@@ -42,6 +42,9 @@ class User(AbstractUser):
         verbose_name='confirmation_code'
     )
 
+    class Meta:
+        ordering = ['username']
+
 
 class Title(models.Model):
     name = models.CharField(max_length=250)
@@ -57,15 +60,23 @@ class Title(models.Model):
         through='GenreTitle',
     )
 
+    class Meta:
+        ordering = ['name']
 
 class Category(models.Model):
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
 
+    class Meta:
+        ordering = ['name']
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
+
+    class Meta:
+        ordering = ['name']
 
 
 class GenreTitle(models.Model):
