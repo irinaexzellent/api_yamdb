@@ -42,6 +42,10 @@ class User(AbstractUser):
         verbose_name='confirmation_code'
     )
 
+
+    class Meta:
+        ordering = ['username']
+=======
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created:
@@ -49,6 +53,7 @@ def create_profile(sender, instance, created, **kwargs):
             user=instance
         )
         instance.save()
+
 
 
 class Title(models.Model):
@@ -70,10 +75,16 @@ class Category(models.Model):
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
 
+    class Meta:
+        ordering = ['name']
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
+
+    class Meta:
+        ordering = ['name']
 
 
 class GenreTitle(models.Model):
