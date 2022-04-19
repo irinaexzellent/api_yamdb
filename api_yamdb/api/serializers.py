@@ -50,14 +50,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'category',
         )
 
-    def validate(self, data):
-        """Валидатор проверяет год произведения."""
-
-        if data['year'] > datetime.datetime.now().year:
-            raise serializers.ValidationError(
-                'Нельзя добавить произведение, которое еще не вышло.')
-        return data
-
     def get_rating(self, obj):
         """Расчет среднего показателя рейтинга из всех оценок."""
 
@@ -89,6 +81,14 @@ class PostTitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
         )
+
+#    def validate(self, data):
+#        """Валидатор проверяет год произведения."""
+
+#        if data.get('year') > datetime.datetime.now().year:
+#            raise ValidationError(
+#                'Нельзя добавить произведение, которое еще не вышло.')
+#        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
