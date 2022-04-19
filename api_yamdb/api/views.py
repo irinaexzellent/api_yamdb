@@ -81,7 +81,7 @@ class TitleFilter(django_filters.FilterSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
@@ -95,8 +95,8 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitleSerializer
         return PostTitleSerializer
 
-    def get_queryset(self):
-        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
+#    def get_queryset(self):
+#        return Title.objects.all().annotate(rating=Avg('Titles_review__score'),)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):

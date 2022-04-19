@@ -60,8 +60,6 @@ class Title(models.Model):
         through='GenreTitle',
     )
 
-    class Meta:
-        ordering = ['name']
 
 class Category(models.Model):
     name = models.CharField(max_length=256,)
