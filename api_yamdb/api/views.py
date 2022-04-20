@@ -6,8 +6,7 @@ from rest_framework import (
     viewsets,
     status,
     permissions,
-    filters,
-    serializers
+    filters
 )
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -164,11 +163,10 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
         url_path='me',
     )
-    def get_account_information(self, request, **kwargs):
+    def get_account_information(self, request):
         serializer = UserSerializer(self.request.user)
-        
         if request.method == 'PATCH':
-            user=self.request.user
+            user = self.request.user
             serializer = UserSerializer(
                 user,
                 data=request.data,
@@ -229,5 +227,3 @@ class APIToken(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    

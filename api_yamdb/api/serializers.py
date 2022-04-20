@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import Avg
 from django.forms import IntegerField
 from rest_framework import serializers
@@ -143,5 +142,3 @@ class ObtainTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'confirmation_code')
-
-    
