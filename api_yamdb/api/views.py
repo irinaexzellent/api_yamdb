@@ -1,5 +1,8 @@
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework import (
     viewsets,
     status,
@@ -17,9 +20,6 @@ from rest_framework.pagination import (
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from django.core.mail import send_mail
-from django.conf import settings
-from django.shortcuts import get_object_or_404
 
 from .permissions import (
     IsAdminOnly,
@@ -59,6 +59,8 @@ class ListPatchDestroyViewSet(
 
 
 class CategoryViewSet(ListPatchDestroyViewSet):
+    """ModelViewSet для обработки эндпоинта /category/."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = CategoryGenrePagination
@@ -71,6 +73,8 @@ class CategoryViewSet(ListPatchDestroyViewSet):
 
 
 class GenreViewSet(ListPatchDestroyViewSet):
+    """ViewSet для обработки эндпоинта /genre/."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = CategoryGenrePagination
@@ -83,6 +87,7 @@ class GenreViewSet(ListPatchDestroyViewSet):
 
 
 class TitleFilter(django_filters.FilterSet):
+
     name = django_filters.CharFilter(
         field_name='name', lookup_expr='icontains')
     category = django_filters.CharFilter(field_name='category__slug')
@@ -95,6 +100,8 @@ class TitleFilter(django_filters.FilterSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """ModelViewSet для обработки эндпоинта /titles/."""
+
     queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
@@ -111,6 +118,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
+    """ModelViewSet для обработки эндпоинта /reviews/."""
+
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = [
@@ -136,6 +145,8 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
+    """ModelViewSet для обработки эндпоинта /comment/."""
+
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = [
@@ -156,6 +167,8 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
 
 class UsersViewSet(viewsets.ModelViewSet):
+    """ModelViewSet для обработки эндпоинта /users/."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
@@ -189,7 +202,8 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 
 class APISignUp(APIView):
-    """Регистрация нового пользователя."""
+    """APIView для регистрации нового пользователя."""
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -213,7 +227,8 @@ class APISignUp(APIView):
 
 
 class APIToken(APIView):
-    """Получение токена"""
+    """APIView для получения токена"""
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):

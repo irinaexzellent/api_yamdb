@@ -7,9 +7,11 @@ from django.dispatch import receiver
 
 
 class User(AbstractUser):
-    USER = 'user'
+    """Модель пользователей."""
+
     ADMIN = 'admin'
     MODERATOR = 'moderator'
+    USER = 'user'
 
     ROLE = [
         (ADMIN, 'admin'),
@@ -46,7 +48,18 @@ class User(AbstractUser):
         ordering = ['username']
 
 
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        instance.confirmation_code = default_token_generator.make_token(
+            user=instance
+        )
+        instance.save()
+
+
 class Title(models.Model):
+    """Модель произведений."""
+
     name = models.CharField(max_length=250)
     year = models.SmallIntegerField()
     description = models.TextField(null=True, blank=True)
@@ -62,6 +75,8 @@ class Title(models.Model):
 
 
 class Category(models.Model):
+    """Модель категорий."""
+
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
 
@@ -70,6 +85,8 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
+    """Модель жанров."""
+
     name = models.CharField(max_length=256,)
     slug = models.SlugField(unique=True)
 
@@ -78,6 +95,8 @@ class Genre(models.Model):
 
 
 class GenreTitle(models.Model):
+    """Модель жанров произведений."""
+
     title_id = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -99,6 +118,8 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
+    """Модель отзывов."""
+
     title = models.ForeignKey(
         Title,
         related_name='Titles_review',
@@ -119,7 +140,7 @@ class Review(models.Model):
             MaxValueValidator(10),
             MinValueValidator(1)
         ])
-        
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -130,6 +151,8 @@ class Review(models.Model):
 
 
 class Comments(models.Model):
+    """Модель комментариев."""
+
     review = models.ForeignKey(
         Review,
         related_name='review_comments',
@@ -146,12 +169,3 @@ class Comments(models.Model):
     )
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
-
-
-@receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
-    if created:
-        instance.confirmation_code = default_token_generator.make_token(
-            user=instance
-        )
-        instance.save()

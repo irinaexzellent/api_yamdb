@@ -82,6 +82,7 @@ class PostTitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор модели отзывов, модели Review. """
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
@@ -102,6 +103,7 @@ class CommentsSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователей, модели User. """
 
     class Meta:
         model = User
@@ -130,6 +132,7 @@ class AuthSerializer(serializers.ModelSerializer):
 
 
 class ObtainTokenSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения токена. """
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
@@ -139,6 +142,7 @@ class ObtainTokenSerializer(serializers.ModelSerializer):
 
 
 class RoleforReadSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователей, 'role' - только для чтения. """
     class Meta:
         model = User
         fields = (
