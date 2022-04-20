@@ -34,7 +34,7 @@ from .serializers import (
     GenreSerializer,
     TitleSerializer,
     PostTitleSerializer,
-    CommentsSerializer,
+    CommentSerializer,
     ReviewSerializer,
     AuthSerializer,
     ObtainTokenSerializer,
@@ -44,7 +44,7 @@ from reviews.models import (
     Category,
     Genre,
     Title,
-    Comments,
+    Comment,
     Review,
     User,
 )
@@ -107,26 +107,25 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        get_object_or_404(Title, id=title_id)
-        new_queryset = Review.objects.filter(title_id=title_id)
+        new_queryset = get_object_or_404(
+            Title, id=title_id).Titles_review.all()
         return new_queryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         get_object_or_404(Title, id=title_id)
-        if Review.objects.filter(
-            title_id=title_id, author=self.request.user
-        ).exists():
-            raise serializers.ValidationError(
-                'У вас уже есть отзыв на данное произведение.')
         serializer.save(author=self.request.user,
                         title_id=title_id)
 
+    def get_serializer_context(self):
+        return {"title_id": self.kwargs.get('title_id'),
+                "user": self.request.user, 'action': self.action}
 
-class CommentsViewSet(viewsets.ModelViewSet):
+
+class CommentViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /comment/."""
 
-    serializer_class = CommentsSerializer
+    serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = [
         WriteOnlyAuthorOr,
@@ -135,7 +134,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         get_object_or_404(Review, id=review_id)
-        new_queryset = Comments.objects.filter(review_id=review_id)
+        new_queryset = Comment.objects.filter(review_id=review_id)
         return new_queryset
 
     def perform_create(self, serializer):
