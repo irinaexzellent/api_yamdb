@@ -82,14 +82,6 @@ class PostTitleSerializer(serializers.ModelSerializer):
             'category',
         )
 
-#    def validate(self, data):
-#        """Валидатор проверяет год произведения."""
-
-#        if data.get('year') > datetime.datetime.now().year:
-#            raise ValidationError(
-#                'Нельзя добавить произведение, которое еще не вышло.')
-#        return data
-
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)

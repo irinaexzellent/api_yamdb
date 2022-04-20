@@ -5,7 +5,8 @@ from rest_framework import (
     status,
     permissions,
     filters,
-    mixins
+    mixins,
+    serializers
 )
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -125,6 +126,11 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         get_object_or_404(Title, id=title_id)
+        if Review.objects.filter(
+            title_id=title_id, author=self.request.user
+        ).exists():
+            raise serializers.ValidationError(
+                'У вас уже есть отзыв на данное произведение.')
         serializer.save(author=self.request.user,
                         title_id=title_id)
 
