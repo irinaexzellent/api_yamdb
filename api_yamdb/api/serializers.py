@@ -1,5 +1,6 @@
+import datetime
+
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -11,8 +12,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        exclude = ('id', )
-        
+        exclude = ('id', ) 
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -28,7 +28,6 @@ class TitleSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -36,17 +35,10 @@ class TitleSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'year',
-            'rating',
             'description',
             'genre',
             'category',
         )
-
-    def get_rating(self, obj):
-        """Расчет среднего показателя рейтинга из всех оценок."""
-
-        rating = obj.Titles_review.aggregate(Avg('score')).get('score__avg')
-        return rating
 
 
 class PostTitleSerializer(serializers.ModelSerializer):
@@ -73,6 +65,13 @@ class PostTitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
         )
+
+    def validate_year(self, data):
+        if data > datetime.datetime.now().year:
+            raise ValidationError(
+                'Нельзя добавлять произведения, которые еще не вышли',
+            )
+        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -118,7 +117,6 @@ class AuthSerializer(serializers.ModelSerializer):
         fields = ('email', 'username')
 
     def validate_username(self, data):
-
         if data == 'me':
             raise ValidationError(
                 message='Нельзя создать пользователя с username = me!')
