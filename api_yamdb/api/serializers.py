@@ -118,7 +118,6 @@ class AuthSerializer(serializers.ModelSerializer):
         fields = ('email', 'username')
 
     def validate_username(self, data):
-
         if data == 'me':
             raise ValidationError(
                 message='Нельзя создать пользователя с username = me!')
@@ -134,17 +133,4 @@ class ObtainTokenSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'confirmation_code')
 
-
-class RoleforReadSerializer(serializers.ModelSerializer):
-    """Сериализатор пользователей, 'role' - только для чтения. """
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role',
-        )
-        read_only_fields = ('role',)
+    

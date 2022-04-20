@@ -1,4 +1,3 @@
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
@@ -8,7 +7,6 @@ from rest_framework import (
     status,
     permissions,
     filters,
-    mixins,
     serializers
 )
 from rest_framework.decorators import action
@@ -20,6 +18,10 @@ from rest_framework.pagination import (
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
+from .filtres import TitleFilter
+
+from .mixins import ListPatchDestroyViewSet
 
 from .permissions import (
     IsAdminOnly,
@@ -35,7 +37,6 @@ from .serializers import (
     CommentsSerializer,
     ReviewSerializer,
     AuthSerializer,
-    RoleforReadSerializer,
     ObtainTokenSerializer,
     UserSerializer
 )
@@ -47,15 +48,6 @@ from reviews.models import (
     Review,
     User,
 )
-
-
-class ListPatchDestroyViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
-    pass
 
 
 class CategoryViewSet(ListPatchDestroyViewSet):
@@ -73,7 +65,7 @@ class CategoryViewSet(ListPatchDestroyViewSet):
 
 
 class GenreViewSet(ListPatchDestroyViewSet):
-    """ViewSet для обработки эндпоинта /genre/."""
+    """ViewSet для обработки эндпоинта /category/."""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -84,19 +76,6 @@ class GenreViewSet(ListPatchDestroyViewSet):
     permission_classes = [
         AdminOrReadOnly,
     ]
-
-
-class TitleFilter(django_filters.FilterSet):
-
-    name = django_filters.CharFilter(
-        field_name='name', lookup_expr='icontains')
-    category = django_filters.CharFilter(field_name='category__slug')
-    genre = django_filters.CharFilter(field_name='genre__slug')
-    year = django_filters.NumberFilter(field_name='year')
-
-    class Meta:
-        model = Title
-        fields = ['name', 'category', 'genre', 'year']
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -186,16 +165,18 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
         url_path='me',
     )
-    def get_account_information(self, request):
+    def get_account_information(self, request, **kwargs):
         serializer = UserSerializer(self.request.user)
+        
         if request.method == 'PATCH':
-            user = self.request.user
-            serializer = RoleforReadSerializer(
+            user=self.request.user
+            serializer = UserSerializer(
                 user,
                 data=request.data,
                 partial=True,
             )
             serializer.is_valid(raise_exception=True)
+            serializer.validated_data.pop('role', None)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -221,8 +202,6 @@ class APISignUp(APIView):
             (email, )
         )
 
-        if serializer.validated_data['username'] == 'me':
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -251,3 +230,5 @@ class APIToken(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    
