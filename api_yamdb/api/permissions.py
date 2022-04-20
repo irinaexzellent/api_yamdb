@@ -30,6 +30,9 @@ class WriteOnlyAuthorOr(BasePermission):
         role_list = {'admin', 'moderator'}
         return (
             request.method in permissions.SAFE_METHODS
-            or (obj.author == request.user) or (request.user.is_authenticated
-                                                and (request.user.is_staff or (request.user.role in role_list)))
+            or (obj.author == request.user) or
+            (request.user.is_authenticated and
+            (request.user.is_staff or
+            (request.user.role in role_list))
+             )
         )
