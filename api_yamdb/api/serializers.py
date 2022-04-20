@@ -1,9 +1,10 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import Avg
+from django.forms import IntegerField
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-
-from reviews.models import Category, Genre, Title, Comments, Review, User
+from reviews.models import Category, Genre, Title, Comment, Review, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -12,7 +13,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         exclude = ('id', )
-        
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -78,6 +78,17 @@ class PostTitleSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов, модели Review. """
     author = SlugRelatedField(slug_field='username', read_only=True)
+    score = IntegerField(min_value=1, max_value=10)
+
+    def validate(self, data):
+        if self.context["action"] != "create":
+            return data
+        if Review.objects.filter(
+            title_id=self.context['title_id'], author=self.context['user']
+        ).exists():
+            raise serializers.ValidationError(
+                'У вас уже есть отзыв на данное произведение.')
+        return data
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date', 'score')
@@ -85,14 +96,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['author']
 
 
-class CommentsSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор комментариев, модели Comment. """
 
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         fields = '__all__'
-        model = Comments
+        model = Comment
         read_only_fields = ['author']
 
 

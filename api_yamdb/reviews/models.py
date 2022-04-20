@@ -133,15 +133,16 @@ class Review(models.Model):
         related_name='reviews',
     )
     text = models.TextField()
-    pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField(auto_now_add=True, db_index=True, )
     score = models.IntegerField(
         default=10,
         validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
+            MaxValueValidator(10, message="оценка не может быть больше 10"),
+            MinValueValidator(1, message="оценка не может быть меньше 1")
         ])
 
     class Meta:
+        ordering = ['pub_date']
         constraints = [
             models.UniqueConstraint(
                 fields=['title_id', 'author_id'],
@@ -150,7 +151,7 @@ class Review(models.Model):
         ]
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     """Модель комментариев."""
 
     review = models.ForeignKey(

@@ -4,6 +4,7 @@ from rest_framework import permissions
 TYPE_OF_ROLE = 'admin'
 ROLE_LIST = {'admin', 'moderator'}
 
+
 class IsAdminOnly(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_staff or (request.user.role == TYPE_OF_ROLE)
