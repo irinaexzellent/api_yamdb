@@ -1,4 +1,5 @@
 import django_filters
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
@@ -102,7 +103,6 @@ class TitleFilter(django_filters.FilterSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /titles/."""
 
-    queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
@@ -115,6 +115,11 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitleSerializer
         return PostTitleSerializer
+
+    def get_queryset(self):
+        return Title.objects.all().annotate(
+            rating=Avg('Titles_review__score'),
+        ).order_by('name')
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
