@@ -1,5 +1,6 @@
+import datetime
+
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
 from django.forms import IntegerField
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -29,6 +30,9 @@ class TitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     rating = serializers.SerializerMethodField()
 
+    def get_rating(self, obj):
+        return obj.rating
+
     class Meta:
         model = Title
         fields = (
@@ -40,12 +44,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
         )
-
-    def get_rating(self, obj):
-        """Расчет среднего показателя рейтинга из всех оценок."""
-
-        rating = obj.Titles_review.aggregate(Avg('score')).get('score__avg')
-        return rating
 
 
 class PostTitleSerializer(serializers.ModelSerializer):
@@ -72,6 +70,13 @@ class PostTitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
         )
+
+    def validate_year(self, data):
+        if data > datetime.datetime.now().year:
+            raise ValidationError(
+                'Нельзя добавлять произведения, которые еще не вышли',
+            )
+        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
