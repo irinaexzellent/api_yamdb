@@ -85,7 +85,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     score = IntegerField(min_value=1, max_value=10)
 
     def validate(self, data):
-        if self.context["action"] != "create":
+        if self.context['action'] != 'create':
             return data
         if Review.objects.filter(
             title_id=self.context['title_id'], author=self.context['user']

@@ -33,10 +33,18 @@ class User(AbstractUser):
     )
 
     username = models.CharField(
-        'имя', max_length=150, unique=True, blank=False, null=False
+        'имя',
+        max_length=150,
+        unique=True,
+        blank=False,
+        null=False
     )
     email = models.EmailField(
-        'email', max_length=254, unique=True, blank=False, null=False
+        'email',
+        max_length=254,
+        unique=True,
+        blank=False,
+        null=False
     )
 
     confirmation_code = models.CharField(

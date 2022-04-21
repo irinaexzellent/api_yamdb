@@ -1,4 +1,4 @@
-from django_filters import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 from django.core.mail import send_mail
 from django.conf import settings
@@ -122,8 +122,8 @@ class ReviewsViewSet(viewsets.ModelViewSet):
                         title_id=title_id)
 
     def get_serializer_context(self):
-        return {"title_id": self.kwargs.get('title_id'),
-                "user": self.request.user, 'action': self.action}
+        return {'title_id': self.kwargs.get('title_id'),
+                'user': self.request.user, 'action': self.action}
 
 
 class CommentViewSet(viewsets.ModelViewSet):
