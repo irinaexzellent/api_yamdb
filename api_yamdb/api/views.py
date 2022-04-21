@@ -1,5 +1,5 @@
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -7,9 +7,7 @@ from rest_framework import (
     viewsets,
     status,
     permissions,
-    filters,
-    mixins,
-    serializers
+    filters
 )
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -20,6 +18,10 @@ from rest_framework.pagination import (
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
+from .filtres import TitleFilter
+
+from .mixins import ListPatchDestroyViewSet
 
 from .permissions import (
     IsAdminOnly,
@@ -32,10 +34,9 @@ from .serializers import (
     GenreSerializer,
     TitleSerializer,
     PostTitleSerializer,
-    CommentsSerializer,
+    CommentSerializer,
     ReviewSerializer,
     AuthSerializer,
-    RoleforReadSerializer,
     ObtainTokenSerializer,
     UserSerializer
 )
@@ -43,19 +44,10 @@ from reviews.models import (
     Category,
     Genre,
     Title,
-    Comments,
+    Comment,
     Review,
     User,
 )
-
-
-class ListPatchDestroyViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
-    pass
 
 
 class CategoryViewSet(ListPatchDestroyViewSet):
@@ -73,7 +65,7 @@ class CategoryViewSet(ListPatchDestroyViewSet):
 
 
 class GenreViewSet(ListPatchDestroyViewSet):
-    """ViewSet для обработки эндпоинта /genre/."""
+    """ViewSet для обработки эндпоинта /category/."""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -86,23 +78,9 @@ class GenreViewSet(ListPatchDestroyViewSet):
     ]
 
 
-class TitleFilter(django_filters.FilterSet):
-
-    name = django_filters.CharFilter(
-        field_name='name', lookup_expr='icontains')
-    category = django_filters.CharFilter(field_name='category__slug')
-    genre = django_filters.CharFilter(field_name='genre__slug')
-    year = django_filters.NumberFilter(field_name='year')
-
-    class Meta:
-        model = Title
-        fields = ['name', 'category', 'genre', 'year']
-
-
 class TitleViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /titles/."""
 
-    queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
@@ -116,6 +94,11 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitleSerializer
         return PostTitleSerializer
 
+    def get_queryset(self):
+        return Title.objects.all().annotate(
+            rating=Avg('Titles_review__score'),
+        ).order_by('name')
+
 
 class ReviewsViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /reviews/."""
@@ -128,26 +111,25 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        get_object_or_404(Title, id=title_id)
-        new_queryset = Review.objects.filter(title_id=title_id)
+        new_queryset = get_object_or_404(
+            Title, id=title_id).Titles_review.all()
         return new_queryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         get_object_or_404(Title, id=title_id)
-        if Review.objects.filter(
-            title_id=title_id, author=self.request.user
-        ).exists():
-            raise serializers.ValidationError(
-                'У вас уже есть отзыв на данное произведение.')
         serializer.save(author=self.request.user,
                         title_id=title_id)
 
+    def get_serializer_context(self):
+        return {'title_id': self.kwargs.get('title_id'),
+                'user': self.request.user, 'action': self.action}
 
-class CommentsViewSet(viewsets.ModelViewSet):
+
+class CommentViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /comment/."""
 
-    serializer_class = CommentsSerializer
+    serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = [
         WriteOnlyAuthorOr,
@@ -156,7 +138,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         get_object_or_404(Review, id=review_id)
-        new_queryset = Comments.objects.filter(review_id=review_id)
+        new_queryset = Comment.objects.filter(review_id=review_id)
         return new_queryset
 
     def perform_create(self, serializer):
@@ -190,12 +172,13 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(self.request.user)
         if request.method == 'PATCH':
             user = self.request.user
-            serializer = RoleforReadSerializer(
+            serializer = UserSerializer(
                 user,
                 data=request.data,
                 partial=True,
             )
             serializer.is_valid(raise_exception=True)
+            serializer.validated_data.pop('role', None)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -221,8 +204,6 @@ class APISignUp(APIView):
             (email, )
         )
 
-        if serializer.validated_data['username'] == 'me':
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
