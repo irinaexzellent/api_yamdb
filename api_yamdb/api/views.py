@@ -81,6 +81,9 @@ class GenreViewSet(ListPatchDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /titles/."""
 
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score'),
+    ).order_by('name')
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
@@ -94,12 +97,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitleSerializer
         return PostTitleSerializer
 
-    def get_queryset(self):
-        return Title.objects.all().annotate(
-            rating=Avg('Titles_review__score'),
-        ).order_by('name')
-
-
+    
 class ReviewsViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /reviews/."""
 
@@ -112,18 +110,18 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         new_queryset = get_object_or_404(
-            Title, id=title_id).Titles_review.all()
+            Title, id=title_id).reviews.all()
         return new_queryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
-        get_object_or_404(Title, id=title_id)
-        serializer.save(author=self.request.user,
-                        title_id=title_id)
+        serializer.save(title_id=title_id, author=self.request.user)
+                       #title_id=title_id)
+       
 
-    def get_serializer_context(self):
-        return {'title_id': self.kwargs.get('title_id'),
-                'user': self.request.user, 'action': self.action}
+    #def get_serializer_context(self):
+    #    return {'title_id': self.kwargs.get('title_id'),
+    #            'user': self.request.user, 'action': self.action}
 
 
 class CommentViewSet(viewsets.ModelViewSet):

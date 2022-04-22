@@ -1,4 +1,5 @@
 import datetime
+from django.db.models import Q, F, CheckConstraint
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
@@ -171,7 +172,7 @@ class Review(models.Model):
 
     title = models.ForeignKey(
         Title,
-        related_name='Titles_review',
+        related_name='reviews',
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
@@ -194,13 +195,13 @@ class Review(models.Model):
         ])
 
     class Meta:
-        ordering = ['pub_date']
         constraints = [
             models.UniqueConstraint(
-                fields=['title_id', 'author_id'],
-                name='unique_reviews'
+                fields=["author", "title"],
+                name="unique_review",
             )
         ]
+        ordering = ['pub_date']
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
 
