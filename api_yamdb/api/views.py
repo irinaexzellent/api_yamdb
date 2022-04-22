@@ -1,51 +1,36 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from rest_framework import (
-    filters,
-    permissions,
-    viewsets,
-    status,
-)
+
+from rest_framework import filters, permissions
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import (
-    LimitOffsetPagination,
-    PageNumberPagination
-)
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.views import APIView
 
 from .filtres import TitleFilter
 from .mixins import ListPatchDestroyViewSet
-from .permissions import (
-    AdminOrReadOnly,
-    IsAdminOnly,
-    WriteOnlyAuthorOr
-)
+from .permissions import AdminOrReadOnly, IsAdminOnly, WriteOnlyAuthorOr
 from .pagination import CategoryGenrePagination
-from .serializers import (
-    AuthSerializer,
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    ObtainTokenSerializer,
-    PostTitleSerializer,
-    ReviewSerializer,
-    TitleSerializer,
-    UserSerializer
-)
-from reviews.models import (
-    Category,
-    Comment,
-    Genre,
-    Review,
-    Title,
-    User,
-)
+from .serializers import AuthSerializer
+from .serializers import CategorySerializer
+from .serializers import CommentSerializer
+from .serializers import GenreSerializer
+from .serializers import ObtainTokenSerializer
+from .serializers import PostTitleSerializer
+from .serializers import ReviewSerializer
+from .serializers import TitleSerializer
+from .serializers import UserSerializer
+
+from reviews.models import Category, Comment
+from reviews.models import Genre, Review
+from reviews.models import Title, User
 
 
 class CategoryViewSet(ListPatchDestroyViewSet):

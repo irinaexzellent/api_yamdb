@@ -1,7 +1,4 @@
-from rest_framework.permissions import BasePermission
-from rest_framework import permissions
-
-ROLE_LIST = {'admin', 'moderator'}
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class IsAdminOnly(BasePermission):
@@ -15,7 +12,7 @@ class IsAdminOnly(BasePermission):
 class AdminOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         return (
-            request.method in permissions.SAFE_METHODS
+            request.method in SAFE_METHODS
             or request.user.is_authenticated
             and (request.user.is_staff or request.user.is_admin)
         )
@@ -24,13 +21,13 @@ class AdminOrReadOnly(BasePermission):
 class WriteOnlyAuthorOr(BasePermission):
     def has_permission(self, request, view):
         return (
-            request.method in permissions.SAFE_METHODS
+            request.method in SAFE_METHODS
             or request.user.is_authenticated
         )
 
     def has_object_permission(self, request, view, obj):
 
-        return (request.method in permissions.SAFE_METHODS
+        return (request.method in SAFE_METHODS
                 or (obj.author == request.user)
                 or (request.user.is_authenticated
                     and (request.user.is_staff
