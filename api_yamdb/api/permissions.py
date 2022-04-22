@@ -1,16 +1,15 @@
 from rest_framework.permissions import BasePermission
 from rest_framework import permissions
 
-TYPE_OF_ROLE = 'admin'
 ROLE_LIST = {'admin', 'moderator'}
 
 
 class IsAdminOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_staff or (request.user.role == TYPE_OF_ROLE)
+        return request.user.is_staff or (request.user.is_admin)
 
     def has_object_permission(self, request, view, obj):
-        return request.user.is_staff or (request.user.role == TYPE_OF_ROLE)
+        return request.user.is_staff or (request.user.is_admin)
 
 
 class AdminOrReadOnly(BasePermission):
@@ -18,7 +17,7 @@ class AdminOrReadOnly(BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
-            and (request.user.is_staff or request.user.role == TYPE_OF_ROLE)
+            and (request.user.is_staff or request.user.is_admin)
         )
 
 
