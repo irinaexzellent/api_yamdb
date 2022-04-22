@@ -4,10 +4,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import (
+    filters,
+    permissions,
     viewsets,
     status,
-    permissions,
-    filters
 )
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -20,32 +20,30 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .filtres import TitleFilter
-
 from .mixins import ListPatchDestroyViewSet
-
 from .permissions import (
-    IsAdminOnly,
     AdminOrReadOnly,
+    IsAdminOnly,
     WriteOnlyAuthorOr
 )
 from .pagination import CategoryGenrePagination
 from .serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    PostTitleSerializer,
-    CommentSerializer,
-    ReviewSerializer,
     AuthSerializer,
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
     ObtainTokenSerializer,
+    PostTitleSerializer,
+    ReviewSerializer,
+    TitleSerializer,
     UserSerializer
 )
 from reviews.models import (
     Category,
-    Genre,
-    Title,
     Comment,
+    Genre,
     Review,
+    Title,
     User,
 )
 
@@ -81,6 +79,9 @@ class GenreViewSet(ListPatchDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /titles/."""
 
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score'),
+    ).order_by('name')
     serializer_class = TitleSerializer
     pagination_class = CategoryGenrePagination
     filter_backends = (DjangoFilterBackend,)
@@ -93,11 +94,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitleSerializer
         return PostTitleSerializer
-
-    def get_queryset(self):
-        return Title.objects.all().annotate(
-            rating=Avg('Titles_review__score'),
-        ).order_by('name')
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
@@ -112,7 +108,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         new_queryset = get_object_or_404(
-            Title, id=title_id).Titles_review.all()
+            Title, id=title_id).reviews.all()
         return new_queryset
 
     def perform_create(self, serializer):

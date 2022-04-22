@@ -1,10 +1,10 @@
-import datetime
-
 from django.core.exceptions import ValidationError
 from django.forms import IntegerField
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from reviews.models import Category, Genre, Title, Comment, Review, User
+
+from reviews.models import Category, Comment, Genre, Title, Review, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -28,10 +28,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
-
-    def get_rating(self, obj):
-        return obj.rating
+    rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Title
@@ -72,7 +69,7 @@ class PostTitleSerializer(serializers.ModelSerializer):
         )
 
     def validate_year(self, data):
-        if data > datetime.datetime.now().year:
+        if data > timezone.now().year:
             raise ValidationError(
                 'Нельзя добавлять произведения, которые еще не вышли',
             )
