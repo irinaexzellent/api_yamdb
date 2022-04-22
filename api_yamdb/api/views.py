@@ -4,10 +4,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import (
+    filters,
+    permissions,
     viewsets,
     status,
-    permissions,
-    filters
 )
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -20,32 +20,30 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .filtres import TitleFilter
-
 from .mixins import ListPatchDestroyViewSet
-
 from .permissions import (
-    IsAdminOnly,
     AdminOrReadOnly,
+    IsAdminOnly,
     WriteOnlyAuthorOr
 )
 from .pagination import CategoryGenrePagination
 from .serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    PostTitleSerializer,
-    CommentSerializer,
-    ReviewSerializer,
     AuthSerializer,
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
     ObtainTokenSerializer,
+    PostTitleSerializer,
+    ReviewSerializer,
+    TitleSerializer,
     UserSerializer
 )
 from reviews.models import (
     Category,
-    Genre,
-    Title,
     Comment,
+    Genre,
     Review,
+    Title,
     User,
 )
 
@@ -116,12 +114,6 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         serializer.save(title_id=title_id, author=self.request.user)
-                       #title_id=title_id)
-       
-
-    #def get_serializer_context(self):
-    #    return {'title_id': self.kwargs.get('title_id'),
-    #            'user': self.request.user, 'action': self.action}
 
 
 class CommentViewSet(viewsets.ModelViewSet):

@@ -1,12 +1,11 @@
-import datetime
-from django.db.models import Q, F, CheckConstraint
-
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+from api.validators import validate_year
 
 ADMIN = 'admin'
 MODERATOR = 'moderator'
@@ -91,18 +90,13 @@ class Title(models.Model):
         'год',
         null=True,
         blank=True,
-        validators=[
-            MaxValueValidator(
-                datetime.datetime.now().year,
-                message='Нельзя добавлять произведения, которые еще не вышли',
-            )
-        ],
+        validators=[validate_year],
     )
     description = models.TextField(null=True, blank=True)
     category = models.ForeignKey(
         'Category',
         on_delete=models.DO_NOTHING,
-        related_name='title',
+        related_name='titles',
         verbose_name='категория',
     )
     genre = models.ManyToManyField(
@@ -146,13 +140,13 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='genre_title_id',
+        related_name='genre_titles',
         verbose_name='произведение',
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        related_name='genre_title',
+        related_name='genre_titles',
         verbose_name='жанр',
     )
 

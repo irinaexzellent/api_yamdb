@@ -1,8 +1,7 @@
-import datetime
-
 from django.core.exceptions import ValidationError
 from django.forms import IntegerField
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from reviews.models import Category, Genre, Title, Comment, Review, User
@@ -29,7 +28,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.FloatField(read_only=True)
 
     def get_rating(self, obj):
         return obj.rating
@@ -73,7 +72,7 @@ class PostTitleSerializer(serializers.ModelSerializer):
         )
 
     def validate_year(self, data):
-        if data > datetime.datetime.now().year:
+        if data > timezone.now().year:
             raise ValidationError(
                 'Нельзя добавлять произведения, которые еще не вышли',
             )
@@ -98,14 +97,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             if self.context['request'].method in ['POST']:
                 raise serializers.ValidationError('Только один отзыв от пользователя')
         return super().validate(attrs)
-
-    #def validate(self, data):
-    #    author = data['author']
-    #    if Review.objects.filter(author=author).exists():
-    #            raise serializers.ValidationError(
-    #            'У вас уже есть отзыв на данное произведение.')
-    #    else:
-    #        return data
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date', 'score')
