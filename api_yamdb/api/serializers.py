@@ -4,8 +4,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from reviews.models import Category, Genre, Title, Comment, Review, User
-
+from reviews.models import Category, Genre
+from reviews.models import Title, Comment
+from reviews.models import Review, User
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор категорий, модели Category."""
@@ -29,9 +30,6 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
     rating = serializers.FloatField(read_only=True)
-
-    def get_rating(self, obj):
-        return obj.rating
 
     class Meta:
         model = Title
@@ -83,19 +81,16 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов, модели Review. """
     author = SlugRelatedField(slug_field='username', read_only=True)
     score = IntegerField(min_value=1, max_value=10)
-    
-
-    def validate_author(sef, data):
-        if Review.objects.filter(author=data).exists():
-            raise serializers.ValidationError('У вас уже есть отзыв на данное произведение.')
-        return data
 
     def validate(self, attrs):
-        title = get_object_or_404(Title, id=self.context['view'].kwargs.get("title_id"))
+        context = self.context['view']
+        title = get_object_or_404(Title, id=context.kwargs.get('title_id'))
         user = self.context.get('request').user
         if Review.objects.filter(title=title, author=user).exists():
             if self.context['request'].method in ['POST']:
-                raise serializers.ValidationError('Только один отзыв от пользователя')
+                raise serializers.ValidationError(
+                    'Только один отзыв от пользователя!'
+                                                  )
         return super().validate(attrs)
 
     class Meta:

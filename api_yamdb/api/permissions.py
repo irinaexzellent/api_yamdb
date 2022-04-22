@@ -34,6 +34,7 @@ class WriteOnlyAuthorOr(BasePermission):
                 or (obj.author == request.user)
                 or (request.user.is_authenticated
                     and (request.user.is_staff
-                         or (request.user.role in ROLE_LIST))
+                         or (request.user.is_admin
+                             or request.user.is_moderator))
                     )
                 )

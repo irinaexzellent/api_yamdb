@@ -95,7 +95,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitleSerializer
         return PostTitleSerializer
 
-    
+
 class ReviewsViewSet(viewsets.ModelViewSet):
     """ModelViewSet для обработки эндпоинта /reviews/."""
 
