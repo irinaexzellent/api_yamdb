@@ -92,8 +92,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         if Review.objects.filter(title=title, author=user).exists():
             if self.context['request'].method in ['POST']:
                 raise serializers.ValidationError(
-                    'Только один отзыв от пользователя!'
-                                                  )
+                    'Только один отзыв от пользователя!')
         return super().validate(attrs)
 
     class Meta:
