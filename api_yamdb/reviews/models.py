@@ -184,15 +184,15 @@ class Review(models.Model):
         'оценка',
         default=10,
         validators=[
-            MaxValueValidator(10, message="оценка не может быть больше 10"),
-            MinValueValidator(1, message="оценка не может быть меньше 1")
+            MaxValueValidator(10, message='оценка не может быть больше 10'),
+            MinValueValidator(1, message='оценка не может быть меньше 1')
         ])
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["author", "title"],
-                name="unique_review",
+                fields=['author', 'title'],
+                name='unique_review',
             )
         ]
         ordering = ['pub_date']
