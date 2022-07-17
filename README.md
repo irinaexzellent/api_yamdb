@@ -42,17 +42,17 @@ python3 manage.py runserver
 # Алгоритм регистрации пользователей
 1. Пользователь отправляет POST-запрос на добавление нового пользователя с параметрами **email** и **username** на эндпоинт:
 ```
-/api/v1/auth/signup/
+http://127.0.0.1:8000/api/v1/auth/signup/
 ```
 2. YaMDB отправляет письмо с кодом подтверждения **confirmation_code** на адрес **email**.
 3. Пользователь отправляет POST-запрос с параметрами **username** и **confirmation_code** на эндпоинт:
 ```
-/api/v1/auth/token/
+http://127.0.0.1:8000/api/v1/auth/token/
 ```
 в ответе на запрос ему приходит **token (JWT-токен)**.
 При желании пользователь отправляет PATCH-запрос на эндпоинт:
 ```
-/api/v1/users/me/ 
+http://127.0.0.1:8000/api/v1/users/me/ 
 ```
 и заполняет поля в своём профайле (описание полей — в документации).
 
@@ -65,12 +65,12 @@ python3 manage.py runserver
 2. YaMDB отправляет письмо с кодом подтверждения **confirmation_code** на адрес **email**.
 3. Пользователь отправляет POST-запрос с параметрами **username** и **confirmation_code** на эндпоинт:
 ```
-/api/v1/auth/token/
+http://127.0.0.1:8000/api/v1/auth/token/
 ```
 в ответе на запрос ему приходит **token (JWT-токен)**.
 При желании пользователь отправляет PATCH-запрос на эндпоинт:
 ```
-/api/v1/users/me/ 
+http://127.0.0.1:8000/api/v1/users/me/ 
 ```
 и заполняет поля в своём профайле (описание полей — в документации).
 
@@ -86,14 +86,14 @@ python3 manage.py runserver
 
 **Регистрация нового пользователя. POST-запрос с параметрами: email, username.**
 ```
-/auth/signup/
+http://127.0.0.1:8000/auth/signup/
 ```
 Код подтверждения передаетсся email.
 *Права доступа: Доступно без токена. Использовать имя 'me' в качестве username запрещено.*
 
 **Получение JWT-токена. POST-запрос с параметрами: username, confirmation code. **
 ```
-/auth/token/
+http://127.0.0.1:8000/auth/token/
 ```
 *Права доступа: Доступно без токена.*
 
@@ -101,7 +101,7 @@ python3 manage.py runserver
 
 **Получение списка всех пользователей. GET-запрос.**
 
-/users/
+http://127.0.0.1:8000/users/
 *Права доступа: Администратор*
 
 **Добавить нового пользователя. POST-запрос с параметрами: username(required), email(required), first_name, last_name, bio, role.**
@@ -110,30 +110,43 @@ python3 manage.py runserver
 
 **Получение пользователя по username. GET-запрос.**
 ```
-/users/username/
+http://127.0.0.1:8000/users/username/
 ```
 *Права доступа: Администратор*
 
 **Изменение данных о пользователе по username. PATCH-запрос с параметрами: username(required), email(required), first_name, last_name, bio, role.**
 ```
-/users/username/
+http://127.0.0.1:8000/users/username/
 ```
 *Права доступа: Администратор*
 
 **Удаление данных о пользователе по username. DELETE-запрос.**
 ```
-/users/username/
+http://127.0.0.1:8000/users/username/
 ```
 *Права доступа: Администратор*
 
 **Получить данные своей учетной записи. GET-запрос.**
 ```
-/users/username/me/
+http://127.0.0.1:8000/users/username/me/
 ```
 *Права доступа: Любой авторизованный пользователь*
 
 **Изменение данных своей учетной записи. PATCH-запрос с параметрами: username(required), email(required), first_name, last_name, bio.**
 ```
-/users/username/me/
+http://127.0.0.1:8000/users/username/me/
 ```
 *Права доступа: Любой авторизованный пользователь*
+
+
+
+Полный список доступных запросов к приложению можно посмотреть:
+* http://127.0.0.1:8000/redoc/
+
+Для изменения содержания базы данных монжо воспользоваться админкой Django:
+* http://127.0.0.1:8000/admin/
+
+
+## Автор
+
+* **Ирина Иконникова** -  [[irinaexcellent](https://github.com/irinaexzellent)]
